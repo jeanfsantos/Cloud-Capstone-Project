@@ -5,7 +5,11 @@ import hello from '@functions/hello';
 const serverlessConfiguration: AWS = {
   service: 'backend',
   frameworkVersion: '3',
-  plugins: ['serverless-esbuild'],
+  plugins: [
+    'serverless-esbuild',
+    'serverless-plugin-tracing',
+    'serverless-offline',
+  ],
   provider: {
     name: 'aws',
     runtime: 'nodejs14.x',
@@ -17,6 +21,17 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
     },
+    tracing: {
+      lambda: true,
+      apiGateway: true,
+    },
+    iamRoleStatements: [
+      {
+        Effect: 'Allow',
+        Action: ['xray:PutTraceSegments', 'xray:PutTelemetryRecords'],
+        Resource: ['*'],
+      },
+    ],
   },
   // import the function via paths
   functions: { hello },

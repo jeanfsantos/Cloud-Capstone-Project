@@ -16,6 +16,7 @@ export default {
       },
     },
   ],
+  tracing: true,
   iamRoleStatements: [
     {
       Effect: 'Allow',

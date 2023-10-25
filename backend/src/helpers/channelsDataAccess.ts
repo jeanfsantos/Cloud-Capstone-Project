@@ -4,6 +4,7 @@ import {
   PutCommand,
   ScanCommandInput,
 } from '@aws-sdk/lib-dynamodb';
+import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
 import { dynamodbClientOptions } from '@config/dynamodbClientOptions';
 import { Channel } from '@models/Channel';
@@ -66,16 +67,7 @@ export class ChannelsDataAccess {
 }
 
 function createDynamoDBClient(): DynamoDBDocumentClient {
-  const client = new DynamoDBClient(dynamodbClientOptions);
-  const docClient = DynamoDBDocumentClient.from(client);
+  const client = captureAWSv3Client(new DynamoDBClient(dynamodbClientOptions));
 
-  return docClient;
-
-  // const service = new AWS.DynamoDB()
-  // const client = new AWS.DynamoDB.DocumentClient({
-  //   service: service
-  // })
-
-  // AWSXRay.captureAWSClient(service)
-  // return client
+  return client;
 }

@@ -1,13 +1,21 @@
+import 'dotenv/config';
+
 import type { AWS } from '@serverless/typescript';
 
 import hello from '@functions/hello';
+import createChannel from '@functions/createChannel';
+
+const stage = process.env.STAGE ?? 'dev';
+const channelsTable = `Channels-${stage}`;
 
 const serverlessConfiguration: AWS = {
   service: 'backend',
   frameworkVersion: '3',
   plugins: [
     'serverless-esbuild',
+    'serverless-iam-roles-per-function',
     'serverless-plugin-tracing',
+    'serverless-dynamodb',
     'serverless-offline',
   ],
   provider: {
@@ -20,6 +28,7 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      CHANNELS_TABLE: channelsTable,
     },
     tracing: {
       lambda: true,
@@ -34,7 +43,7 @@ const serverlessConfiguration: AWS = {
     ],
   },
   // import the function via paths
-  functions: { hello },
+  functions: { hello, createChannel },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -46,6 +55,29 @@ const serverlessConfiguration: AWS = {
       define: { 'require.resolve': undefined },
       platform: 'node',
       concurrency: 10,
+    },
+  },
+  resources: {
+    Resources: {
+      ChannelsDynamoDBTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: 'id',
+              AttributeType: 'S',
+            },
+          ],
+          KeySchema: [
+            {
+              AttributeName: 'id',
+              KeyType: 'HASH',
+            },
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          TableName: channelsTable,
+        },
+      },
     },
   },
 };

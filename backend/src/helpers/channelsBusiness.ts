@@ -25,3 +25,16 @@ export async function createChannel(name: string): Promise<Channel> {
     throw e;
   }
 }
+
+export async function getChannels(): Promise<Channel[]> {
+  try {
+    logger.info('Getting channels');
+
+    const channels = await channelsDataAccess.getChannels();
+
+    return channels;
+  } catch (e) {
+    logger.error('Fail to get channels', { error: e });
+    throw e;
+  }
+}

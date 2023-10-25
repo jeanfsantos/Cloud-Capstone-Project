@@ -1,5 +1,9 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  ScanCommandInput,
+} from '@aws-sdk/lib-dynamodb';
 
 import { dynamodbClientOptions } from '@config/dynamodbClientOptions';
 import { Channel } from '@models/Channel';
@@ -29,6 +33,33 @@ export class ChannelsDataAccess {
       return channel;
     } catch (e) {
       logger.error('Fail to create new channel', { error: e });
+      throw e;
+    }
+  }
+
+  // https://stackoverflow.com/questions/61800675/get-all-items-from-a-table-without-scan
+  async getChannels(): Promise<Channel[]> {
+    try {
+      logger.info('Getting channels');
+
+      const queryParams: ScanCommandInput = {
+        TableName: this.channelsTable,
+      };
+
+      const command = new ScanCommand(queryParams);
+
+      const result = await this.docClient.send(command);
+
+      return result.Items.map(item => {
+        const { id, name } = item;
+
+        return {
+          id: id.S,
+          name: name.S,
+        };
+      });
+    } catch (e) {
+      logger.error('Fail to get channels', { error: e });
       throw e;
     }
   }

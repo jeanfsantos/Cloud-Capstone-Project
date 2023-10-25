@@ -4,6 +4,7 @@ import type { AWS } from '@serverless/typescript';
 
 import hello from '@functions/hello';
 import createChannel from '@functions/createChannel';
+import getChannels from '@functions/getChannels';
 
 const stage = process.env.STAGE ?? 'dev';
 const channelsTable = `Channels-${stage}`;
@@ -43,7 +44,7 @@ const serverlessConfiguration: AWS = {
     ],
   },
   // import the function via paths
-  functions: { hello, createChannel },
+  functions: { hello, createChannel, getChannels },
   package: { individually: true },
   custom: {
     esbuild: {

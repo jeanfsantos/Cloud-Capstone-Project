@@ -2,14 +2,20 @@ import 'dotenv/config';
 
 import type { AWS } from '@serverless/typescript';
 
+// http
 import hello from '@functions/hello';
 import createChannel from '@functions/createChannel';
 import getChannels from '@functions/getChannels';
 import createMessage from '@functions/createMessage';
 
+// websocket
+import connectHandler from '@functions/websocket/connectHandler';
+import disconnectHandler from '@functions/websocket/disconnectHandler';
+
 const stage = process.env.STAGE ?? 'dev';
 const channelsTable = `Channels-${stage}`;
 const messagesTable = `Messages-${stage}`;
+const connectionsTable = `Connections-${stage}`;
 
 const serverlessConfiguration: AWS = {
   service: 'backend',
@@ -33,6 +39,7 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       CHANNELS_TABLE: channelsTable,
       MESSAGES_TABLE: messagesTable,
+      CONNECTIONS_TABLE: connectionsTable,
     },
     tracing: {
       lambda: true,
@@ -47,7 +54,14 @@ const serverlessConfiguration: AWS = {
     ],
   },
   // import the function via paths
-  functions: { hello, createChannel, getChannels, createMessage },
+  functions: {
+    hello,
+    createChannel,
+    getChannels,
+    createMessage,
+    connectHandler,
+    disconnectHandler,
+  },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -107,6 +121,25 @@ const serverlessConfiguration: AWS = {
           ],
           BillingMode: 'PAY_PER_REQUEST',
           TableName: messagesTable,
+        },
+      },
+      ConnectionsDynamoDBTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: 'id',
+              AttributeType: 'S',
+            },
+          ],
+          KeySchema: [
+            {
+              AttributeName: 'id',
+              KeyType: 'HASH',
+            },
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          TableName: connectionsTable,
         },
       },
     },

@@ -5,9 +5,11 @@ import type { AWS } from '@serverless/typescript';
 import hello from '@functions/hello';
 import createChannel from '@functions/createChannel';
 import getChannels from '@functions/getChannels';
+import createMessage from '@functions/createMessage';
 
 const stage = process.env.STAGE ?? 'dev';
 const channelsTable = `Channels-${stage}`;
+const messagesTable = `Messages-${stage}`;
 
 const serverlessConfiguration: AWS = {
   service: 'backend',
@@ -30,6 +32,7 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       CHANNELS_TABLE: channelsTable,
+      MESSAGES_TABLE: messagesTable,
     },
     tracing: {
       lambda: true,
@@ -44,7 +47,7 @@ const serverlessConfiguration: AWS = {
     ],
   },
   // import the function via paths
-  functions: { hello, createChannel, getChannels },
+  functions: { hello, createChannel, getChannels, createMessage },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -77,6 +80,33 @@ const serverlessConfiguration: AWS = {
           ],
           BillingMode: 'PAY_PER_REQUEST',
           TableName: channelsTable,
+        },
+      },
+      MessagesDynamoDBTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: 'channelId',
+              AttributeType: 'S',
+            },
+            {
+              AttributeName: 'timestamp',
+              AttributeType: 'S',
+            },
+          ],
+          KeySchema: [
+            {
+              AttributeName: 'channelId',
+              KeyType: 'HASH',
+            },
+            {
+              AttributeName: 'timestamp',
+              KeyType: 'RANGE',
+            },
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          TableName: messagesTable,
         },
       },
     },

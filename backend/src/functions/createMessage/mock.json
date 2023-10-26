@@ -1,0 +1,6 @@
+{
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"channelId\": \"abc123\", \"text\": \"Hello John\"}"
+}

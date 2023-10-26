@@ -3,10 +3,10 @@ import 'dotenv/config';
 import type { AWS } from '@serverless/typescript';
 
 // http
-import hello from '@functions/hello';
-import createChannel from '@functions/createChannel';
-import getChannels from '@functions/getChannels';
-import createMessage from '@functions/createMessage';
+import hello from '@functions/http/hello';
+import createChannel from '@functions/http/createChannel';
+import getChannels from '@functions/http/getChannels';
+import createMessage from '@functions/http/createMessage';
 
 // websocket
 import connectHandler from '@functions/websocket/connectHandler';

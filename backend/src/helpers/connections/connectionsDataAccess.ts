@@ -3,6 +3,7 @@ import {
   DeleteCommand,
   DynamoDBDocumentClient,
   PutCommand,
+  ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
@@ -52,6 +53,25 @@ export class ConnectionsDataAccess {
       logger.info('Deleted a connection');
     } catch (e) {
       logger.error('Fail to delete a connection');
+      throw e;
+    }
+  }
+
+  async getConnections(): Promise<Connection[]> {
+    try {
+      logger.info('Getting connections');
+
+      const command = new ScanCommand({
+        TableName: this.connectionsTable,
+      });
+
+      const connections = await this.docClient.send(command);
+
+      logger.info('Getted connections', { connections: connections.Items });
+
+      return connections.Items as Connection[];
+    } catch (e) {
+      logger.error('Fail to get connections');
       throw e;
     }
   }

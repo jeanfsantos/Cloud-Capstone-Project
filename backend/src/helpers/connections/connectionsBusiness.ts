@@ -36,3 +36,16 @@ export async function deleteConnection(connectionId: string): Promise<void> {
     throw e;
   }
 }
+
+export async function getConnections(): Promise<Connection[]> {
+  try {
+    logger.info('Getting connections');
+
+    const connections = await connectionsDataAccess.getConnections();
+
+    return connections;
+  } catch (e) {
+    logger.error('Fail to get connections', { error: e });
+    throw e;
+  }
+}

@@ -12,6 +12,10 @@ import createMessage from '@functions/http/createMessage';
 import connectHandler from '@functions/websocket/connectHandler';
 import disconnectHandler from '@functions/websocket/disconnectHandler';
 
+// dynamoDB
+import sendMessage from '@functions/dynamoDB/sendMessage';
+
+const region = process.env.REGION ?? 'us-east-1';
 const stage = process.env.STAGE ?? 'dev';
 const channelsTable = `Channels-${stage}`;
 const messagesTable = `Messages-${stage}`;
@@ -40,6 +44,18 @@ const serverlessConfiguration: AWS = {
       CHANNELS_TABLE: channelsTable,
       MESSAGES_TABLE: messagesTable,
       CONNECTIONS_TABLE: connectionsTable,
+      API_GATEWAY_URL: {
+        'Fn::Join': [
+          '',
+          [
+            'https://',
+            {
+              Ref: 'WebsocketsApi',
+            },
+            '.execute-api.${self:custom.region}.amazonaws.com/${self:custom.stage}',
+          ],
+        ],
+      },
     },
     tracing: {
       lambda: true,
@@ -61,6 +77,7 @@ const serverlessConfiguration: AWS = {
     createMessage,
     connectHandler,
     disconnectHandler,
+    sendMessage,
   },
   package: { individually: true },
   custom: {
@@ -74,6 +91,8 @@ const serverlessConfiguration: AWS = {
       platform: 'node',
       concurrency: 10,
     },
+    stage: stage,
+    region: region,
   },
   resources: {
     Resources: {
@@ -121,6 +140,9 @@ const serverlessConfiguration: AWS = {
           ],
           BillingMode: 'PAY_PER_REQUEST',
           TableName: messagesTable,
+          StreamSpecification: {
+            StreamViewType: 'NEW_IMAGE',
+          },
         },
       },
       ConnectionsDynamoDBTable: {

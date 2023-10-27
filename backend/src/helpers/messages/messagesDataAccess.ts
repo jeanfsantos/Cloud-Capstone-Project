@@ -1,5 +1,10 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  QueryCommand,
+  QueryCommandInput,
+} from '@aws-sdk/lib-dynamodb';
 import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
 import { dynamodbClientOptions } from '@config/dynamodbClientOptions';
@@ -30,6 +35,37 @@ export class MessagesDataAccess {
       return message;
     } catch (e) {
       logger.error('Fail to create new message', { error: e });
+      throw e;
+    }
+  }
+
+  async getMessagesByChannel(channelId: string): Promise<Message[]> {
+    try {
+      logger.info(`Getting messages by channel ${channelId}`);
+
+      const queryParams: QueryCommandInput = {
+        TableName: this.messagesTable,
+        KeyConditionExpression: 'channelId = :channelId',
+        ExpressionAttributeValues: {
+          ':channelId': channelId,
+        },
+        ScanIndexForward: false,
+      };
+
+      const command = new QueryCommand(queryParams);
+
+      const messages = await this.docClient.send(command);
+
+      logger.info(`Getted messages by channel ${channelId}`, {
+        response: messages.Items,
+      });
+
+      return messages.Items as Message[];
+    } catch (e) {
+      logger.error(`Fail to get messages by channel ${channelId}`, {
+        error: e,
+      });
+
       throw e;
     }
   }

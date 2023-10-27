@@ -67,3 +67,20 @@ export async function sendMessageToClient(
     throw e;
   }
 }
+
+export async function getMessagesByChannel(
+  channelId: string,
+): Promise<Message[]> {
+  try {
+    logger.info(`Getting messages by channel ${channelId}`);
+
+    const messages = await messagesDataAccess.getMessagesByChannel(channelId);
+
+    return messages;
+  } catch (e) {
+    logger.error(`Fail to get messages by channel ${channelId}`, {
+      error: e,
+    });
+    throw e;
+  }
+}

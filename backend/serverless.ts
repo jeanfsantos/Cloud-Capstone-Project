@@ -7,6 +7,7 @@ import hello from '@functions/http/hello';
 import createChannel from '@functions/http/createChannel';
 import getChannels from '@functions/http/getChannels';
 import createMessage from '@functions/http/createMessage';
+import getMessagesByChannel from '@functions/http/getMessagesByChannel';
 
 // websocket
 import connectHandler from '@functions/websocket/connectHandler';
@@ -78,6 +79,7 @@ const serverlessConfiguration: AWS = {
     connectHandler,
     disconnectHandler,
     sendMessage,
+    getMessagesByChannel,
   },
   package: { individually: true },
   custom: {

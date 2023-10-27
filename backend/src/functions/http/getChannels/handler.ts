@@ -2,7 +2,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 
-import { getChannels } from '@helpers/channelsBusiness';
+import { getChannels } from '@helpers/channels/channelsBusiness';
 import { Channel } from '@models/Channel';
 import { createLogger } from '@utils/logger';
 import schema from './schema';

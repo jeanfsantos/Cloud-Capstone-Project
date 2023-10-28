@@ -7,6 +7,7 @@ export default {
       http: {
         method: 'get',
         path: 'channel/{channelId}/messages',
+        cors: true,
       },
     },
   ],

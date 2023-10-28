@@ -8,6 +8,7 @@ export default {
       http: {
         method: 'post',
         path: 'channels',
+        cors: true,
         request: {
           schemas: {
             'application/json': schema,

@@ -9,7 +9,7 @@ const channelsDataAccess = new ChannelsDataAccess();
 
 export async function createChannel(name: string): Promise<Channel> {
   try {
-    logger.info('Creating new channel');
+    logger.info('Creating new channel', { payload: name });
 
     const channelId = randomUUID();
     const newChannel = {

@@ -8,6 +8,7 @@ import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
 import { dynamodbClientOptions } from '@config/dynamodbClientOptions';
 import { Channel } from '@models/Channel';
+import { User } from '@models/User';
 import { createLogger } from '@utils/logger';
 
 const logger = createLogger('ChannelsDataAccess');
@@ -52,11 +53,21 @@ export class ChannelsDataAccess {
       const result = await this.docClient.send(command);
 
       return result.Items.map(item => {
-        const { id, name } = item;
+        const { id, name, user } = item;
+        const _user: User = {
+          sub: user.M.sub.S,
+          email_verified: user.M.email_verified.BOOL,
+          updated_at: user.M.updated_at.S,
+          nickname: user.M.nickname.S,
+          name: user.M.name.S,
+          picture: user.M.picture.S,
+          email: user.M.email.S,
+        };
 
         return {
           id: id.S,
           name: name.S,
+          user: _user,
         };
       });
     } catch (e) {

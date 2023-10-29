@@ -8,8 +8,6 @@ function CreateChannel() {
   const [name, setName] = useState('');
   const { user } = useAuth0();
 
-  console.log(user);
-
   const onSubmit = event => {
     event.preventDefault();
 
@@ -29,6 +27,7 @@ function CreateChannel() {
       },
       body: JSON.stringify({
         name,
+        user,
       }),
     })
       .catch(err => {

@@ -1,13 +1,17 @@
 import { randomUUID } from 'crypto';
 
 import { Channel } from '@models/Channel';
+import { User } from '@models/User';
 import { createLogger } from '@utils/logger';
 import { ChannelsDataAccess } from './channelsDataAccess';
 
 const logger = createLogger('ChannelsBusiness');
 const channelsDataAccess = new ChannelsDataAccess();
 
-export async function createChannel(name: string): Promise<Channel> {
+export async function createChannel(
+  name: string,
+  user: User,
+): Promise<Channel> {
   try {
     logger.info('Creating new channel', { payload: name });
 
@@ -15,6 +19,7 @@ export async function createChannel(name: string): Promise<Channel> {
     const newChannel = {
       id: channelId,
       name,
+      user,
     } as Channel;
 
     const channel = await channelsDataAccess.createChannel(newChannel);

@@ -4,6 +4,7 @@ import { middyfy } from '@libs/lambda';
 
 import { createChannel } from '@helpers/channels/channelsBusiness';
 import { Channel } from '@models/Channel';
+import { User } from '@models/User';
 import { createLogger } from '@utils/logger';
 import schema from './schema';
 
@@ -15,9 +16,9 @@ const channels: ValidatedEventAPIGatewayProxyEvent<
   try {
     logger.info('Creating new channel');
 
-    const { name } = event.body;
+    const { name, user } = event.body;
 
-    const channel: Channel = await createChannel(name);
+    const channel: Channel = await createChannel(name, user as User);
 
     return formatJSONResponse(201, {
       channel,

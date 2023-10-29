@@ -49,7 +49,7 @@ export class MessagesDataAccess {
         ExpressionAttributeValues: {
           ':channelId': channelId,
         },
-        ScanIndexForward: false,
+        ScanIndexForward: true,
       };
 
       const command = new QueryCommand(queryParams);

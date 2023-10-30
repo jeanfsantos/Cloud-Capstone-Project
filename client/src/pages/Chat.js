@@ -14,7 +14,11 @@ function Chat() {
 
   useEffect(() => {
     try {
-      fetch(`${config.endpoint}/channels`)
+      fetch(`${config.endpoint}/channels`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
         .then(response => response.json())
         .then(data => {
           return data.channels.map(channel => ({
@@ -34,7 +38,11 @@ function Chat() {
     }
 
     try {
-      fetch(`${config.endpoint}/channel/${selectedChannel.id}/messages`)
+      fetch(`${config.endpoint}/channel/${selectedChannel.id}/messages`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
         .then(response => response.json())
         .then(data => {
           setMessages(data.messages);

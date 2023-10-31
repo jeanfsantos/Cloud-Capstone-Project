@@ -3,10 +3,11 @@ import {
   PostToConnectionCommand,
 } from '@aws-sdk/client-apigatewaymanagementapi';
 
+import { deleteConnection } from '@helpers/connections/connectionsBusiness';
 import { Message } from '@models/Message';
+import { User } from '@models/User';
 import { createLogger } from '@utils/logger';
 import { MessagesDataAccess } from './messagesDataAccess';
-import { deleteConnection } from '@helpers/connections/connectionsBusiness';
 
 const logger = createLogger('MessagesBusiness');
 const messagesDataAccess = new MessagesDataAccess();
@@ -20,6 +21,7 @@ const apiGateway = new ApiGatewayManagementApiClient(connectionParams);
 export async function createMessage(
   channelId: string,
   text: string,
+  user: User,
 ): Promise<Message> {
   try {
     logger.info('Creating new message');
@@ -29,6 +31,7 @@ export async function createMessage(
       channelId,
       text,
       timestamp,
+      user,
     } as Message;
 
     const message = await messagesDataAccess.createMessage(newMessage);

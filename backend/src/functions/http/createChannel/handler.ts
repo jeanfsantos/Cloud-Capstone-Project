@@ -3,8 +3,8 @@ import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 
 import { createChannel } from '@helpers/channels/channelsBusiness';
+import { getUser } from '@helpers/users/usersBusiness';
 import { Channel } from '@models/Channel';
-import { User } from '@models/User';
 import { createLogger } from '@utils/logger';
 import schema from './schema';
 
@@ -16,9 +16,13 @@ const channels: ValidatedEventAPIGatewayProxyEvent<
   try {
     logger.info('Creating new channel');
 
-    const { name, user } = event.body;
+    const { name } = event.body;
 
-    const channel: Channel = await createChannel(name, user as User);
+    const user = await getUser(event.headers.Authorization);
+
+    logger.info(`Creating new channel: ${name} of user`, { user });
+
+    const channel: Channel = await createChannel(name, user);
 
     return formatJSONResponse(201, {
       channel,

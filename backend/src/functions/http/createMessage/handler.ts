@@ -6,6 +6,7 @@ import { createMessage } from '@helpers/messages/messagesBusiness';
 import { Message } from '@models/Message';
 import { createLogger } from '@utils/logger';
 import schema from './schema';
+import { getUser } from '@helpers/users/usersBusiness';
 
 const logger = createLogger('createChannel');
 
@@ -17,7 +18,11 @@ const messages: ValidatedEventAPIGatewayProxyEvent<
 
     const { channelId, text } = event.body;
 
-    const message: Message = await createMessage(channelId, text);
+    const user = await getUser(event.headers.Authorization);
+
+    logger.info(`Creating new message: ${text} of user`, { user });
+
+    const message: Message = await createMessage(channelId, text, user);
 
     return formatJSONResponse(201, {
       message,

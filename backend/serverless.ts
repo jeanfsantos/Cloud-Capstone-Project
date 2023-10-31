@@ -9,6 +9,9 @@ import getChannels from '@functions/http/getChannels';
 import createMessage from '@functions/http/createMessage';
 import getMessagesByChannel from '@functions/http/getMessagesByChannel';
 
+// auth
+import auth0Authorizer from '@functions/auth/auth0Authorizer';
+
 // websocket
 import connectHandler from '@functions/websocket/connectHandler';
 import disconnectHandler from '@functions/websocket/disconnectHandler';
@@ -57,6 +60,7 @@ const serverlessConfiguration: AWS = {
           ],
         ],
       },
+      API_AUTH0: 'https://dev-fqiz0hf1no3st0ac.us.auth0.com',
     },
     tracing: {
       lambda: true,
@@ -69,6 +73,14 @@ const serverlessConfiguration: AWS = {
         Resource: ['*'],
       },
     ],
+    httpApi: {
+      authorizers: {
+        auth0Authorizer: {
+          type: 'request',
+          functionName: 'auth0Authorizer',
+        },
+      },
+    },
   },
   // import the function via paths
   functions: {
@@ -80,6 +92,7 @@ const serverlessConfiguration: AWS = {
     disconnectHandler,
     sendMessage,
     getMessagesByChannel,
+    auth0Authorizer,
   },
   package: { individually: true },
   custom: {

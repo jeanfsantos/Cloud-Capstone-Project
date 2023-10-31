@@ -8,6 +8,9 @@ export default {
         method: 'get',
         path: 'channel/{channelId}/messages',
         cors: true,
+        authorizer: {
+          name: 'auth0Authorizer',
+        },
       },
     },
   ],

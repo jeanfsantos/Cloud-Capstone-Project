@@ -8,6 +8,9 @@ export default {
         method: 'get',
         path: 'channels',
         cors: true,
+        authorizer: {
+          name: 'auth0Authorizer',
+        },
       },
     },
   ],

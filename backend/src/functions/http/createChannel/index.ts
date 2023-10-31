@@ -9,6 +9,9 @@ export default {
         method: 'post',
         path: 'channels',
         cors: true,
+        authorizer: {
+          name: 'auth0Authorizer',
+        },
         request: {
           schemas: {
             'application/json': schema,

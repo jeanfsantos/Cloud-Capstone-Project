@@ -158,6 +158,10 @@ const serverlessConfiguration: AWS = {
               AttributeName: 'timestamp',
               AttributeType: 'S',
             },
+            {
+              AttributeName: 'messageId',
+              AttributeType: 'S',
+            },
           ],
           KeySchema: [
             {
@@ -167,6 +171,20 @@ const serverlessConfiguration: AWS = {
             {
               AttributeName: 'timestamp',
               KeyType: 'RANGE',
+            },
+          ],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: 'messageIdIndex',
+              KeySchema: [
+                {
+                  AttributeName: 'messageId',
+                  KeyType: 'HASH',
+                },
+              ],
+              Projection: {
+                ProjectionType: 'ALL',
+              },
             },
           ],
           BillingMode: 'PAY_PER_REQUEST',

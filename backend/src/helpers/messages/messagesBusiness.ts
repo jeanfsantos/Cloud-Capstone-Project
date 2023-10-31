@@ -2,6 +2,7 @@ import {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
 } from '@aws-sdk/client-apigatewaymanagementapi';
+import { randomUUID } from 'crypto';
 
 import { deleteConnection } from '@helpers/connections/connectionsBusiness';
 import { Message } from '@models/Message';
@@ -26,12 +27,14 @@ export async function createMessage(
   try {
     logger.info('Creating new message');
 
+    const messageId = randomUUID();
     const timestamp = String(new Date().getTime());
     const newMessage = {
       channelId,
       text,
       timestamp,
       user,
+      messageId,
     } as Message;
 
     const message = await messagesDataAccess.createMessage(newMessage);

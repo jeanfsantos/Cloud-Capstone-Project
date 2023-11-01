@@ -1,14 +1,14 @@
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
   PutCommand,
+  ScanCommand,
   ScanCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
 import { dynamodbClientOptions } from '@config/dynamodbClientOptions';
 import { Channel } from '@models/Channel';
-import { User } from '@models/User';
 import { createLogger } from '@utils/logger';
 
 const logger = createLogger('ChannelsDataAccess');
@@ -52,24 +52,7 @@ export class ChannelsDataAccess {
 
       const result = await this.docClient.send(command);
 
-      return result.Items.map(item => {
-        const { id, name, user } = item;
-        const _user: User = {
-          sub: user.M.sub.S,
-          email_verified: user.M.email_verified.BOOL,
-          updated_at: user.M.updated_at.S,
-          nickname: user.M.nickname.S,
-          name: user.M.name.S,
-          picture: user.M.picture.S,
-          email: user.M.email.S,
-        };
-
-        return {
-          id: id.S,
-          name: name.S,
-          user: _user,
-        };
-      });
+      return result.Items as Channel[];
     } catch (e) {
       logger.error('Fail to get channels', { error: e });
       throw e;

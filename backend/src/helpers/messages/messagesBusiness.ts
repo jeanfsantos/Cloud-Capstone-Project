@@ -4,6 +4,7 @@ import {
 } from '@aws-sdk/client-apigatewaymanagementapi';
 import { randomUUID } from 'crypto';
 
+import { PayloadResponse } from '@functions/dynamoDB/sendMessage/payloadFactory';
 import { deleteConnection } from '@helpers/connections/connectionsBusiness';
 import { Message } from '@models/Message';
 import { User } from '@models/User';
@@ -28,13 +29,14 @@ export async function createMessage(
     logger.info('Creating new message');
 
     const messageId = randomUUID();
-    const timestamp = String(new Date().getTime());
+    const createdAt = String(new Date().getTime());
     const newMessage = {
       channelId,
       text,
-      timestamp,
+      createdAt,
       user,
       messageId,
+      userId: user.sub,
     } as Message;
 
     const message = await messagesDataAccess.createMessage(newMessage);
@@ -48,14 +50,14 @@ export async function createMessage(
 
 export async function sendMessageToClient(
   connectionId: string,
-  message: Message,
+  payload: PayloadResponse,
 ): Promise<void> {
   try {
     logger.info(`Sending message to a connection: ${connectionId}`);
 
     const postToConnectionCommand = new PostToConnectionCommand({
       ConnectionId: connectionId,
-      Data: JSON.stringify(message),
+      Data: JSON.stringify(payload),
     });
 
     logger.info(`API Gateway: ${process.env.API_GATEWAY_URL}`);
@@ -87,6 +89,25 @@ export async function getMessagesByChannel(
     logger.error(`Fail to get messages by channel ${channelId}`, {
       error: e,
     });
+    throw e;
+  }
+}
+
+export async function deleteMessageById(
+  userId: string,
+  messageId: string,
+): Promise<void> {
+  try {
+    logger.info(`Deleting a message by id ${messageId} for userId ${userId}`);
+
+    await messagesDataAccess.deleteMessageById(userId, messageId);
+  } catch (e) {
+    logger.error(
+      `Fail to delete a message id: ${messageId} for userId: ${userId}`,
+      {
+        error: e,
+      },
+    );
     throw e;
   }
 }

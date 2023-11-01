@@ -5,8 +5,8 @@ export default {
   events: [
     {
       http: {
-        method: 'get',
-        path: 'channel/{channelId}/messages',
+        method: 'delete',
+        path: 'messages/{messageId}',
         cors: true,
         authorizer: {
           name: 'auth0Authorizer',
@@ -18,17 +18,9 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:Query'],
+      Action: ['dynamodb:DeleteItem', 'dynamodb:GetItem'],
       Resource: {
-        'Fn::Join': [
-          '/',
-          [
-            {
-              'Fn::GetAtt': ['MessagesDynamoDBTable', 'Arn'],
-            },
-            'index/channelIdIndex',
-          ],
-        ],
+        'Fn::GetAtt': ['MessagesDynamoDBTable', 'Arn'],
       },
     },
   ],

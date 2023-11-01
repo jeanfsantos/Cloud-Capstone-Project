@@ -1,5 +1,6 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
 import {
+  DeleteCommand,
   DynamoDBDocumentClient,
   PutCommand,
   QueryCommand,
@@ -17,6 +18,7 @@ export class MessagesDataAccess {
   constructor(
     private readonly docClient = createDynamoDBClient(),
     private readonly messagesTable = process.env.MESSAGES_TABLE,
+    private readonly channelIdIndex = process.env.CHANNEL_ID_INDEX,
   ) {}
 
   async createMessage(message: Message): Promise<Message> {
@@ -49,6 +51,7 @@ export class MessagesDataAccess {
         ExpressionAttributeValues: {
           ':channelId': channelId,
         },
+        IndexName: this.channelIdIndex,
         ScanIndexForward: true,
       };
 
@@ -66,6 +69,45 @@ export class MessagesDataAccess {
         error: e,
       });
 
+      throw e;
+    }
+  }
+
+  async deleteMessageById(userId: string, messageId: string): Promise<void> {
+    try {
+      logger.info(`Deleting a message id: ${messageId} for userId: ${userId}`);
+
+      const getItemCommand = new GetItemCommand({
+        TableName: this.messagesTable,
+        Key: {
+          userId: {
+            S: userId,
+          },
+          messageId: {
+            S: messageId,
+          },
+        },
+      });
+
+      const getItemResponse = await this.docClient.send(getItemCommand);
+
+      if (!getItemResponse.Item) {
+        throw new Error('Not found');
+      }
+
+      const deleteCommand = new DeleteCommand({
+        TableName: this.messagesTable,
+        Key: {
+          userId,
+          messageId,
+        },
+      });
+
+      await this.docClient.send(deleteCommand);
+
+      logger.info(`Deleted a message id: ${messageId} for userId: ${userId}`);
+    } catch (e) {
+      logger.error('Fail to delete a message', { error: e });
       throw e;
     }
   }

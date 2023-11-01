@@ -8,6 +8,7 @@ import createChannel from '@functions/http/createChannel';
 import getChannels from '@functions/http/getChannels';
 import createMessage from '@functions/http/createMessage';
 import getMessagesByChannel from '@functions/http/getMessagesByChannel';
+import deleteMessage from '@functions/http/deleteMessage';
 
 // auth
 import auth0Authorizer from '@functions/auth/auth0Authorizer';
@@ -24,6 +25,7 @@ const stage = process.env.STAGE ?? 'dev';
 const channelsTable = `Channels-${stage}`;
 const messagesTable = `Messages-${stage}`;
 const connectionsTable = `Connections-${stage}`;
+const channelIdIndex = 'channelIdIndex';
 
 const serverlessConfiguration: AWS = {
   service: 'backend',
@@ -61,6 +63,7 @@ const serverlessConfiguration: AWS = {
         ],
       },
       API_AUTH0: 'https://dev-fqiz0hf1no3st0ac.us.auth0.com',
+      CHANNEL_ID_INDEX: channelIdIndex,
     },
     tracing: {
       lambda: true,
@@ -93,6 +96,7 @@ const serverlessConfiguration: AWS = {
     sendMessage,
     getMessagesByChannel,
     auth0Authorizer,
+    deleteMessage,
   },
   package: { individually: true },
   custom: {
@@ -119,7 +123,7 @@ const serverlessConfiguration: AWS = {
             'gatewayresponse.header.Access-Control-Allow-Headers':
               "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
             'gatewayresponse.header.Access-Control-Allow-Methods':
-              "'GET,OPTIONS,POST'",
+              "'GET,OPTIONS,POST,DELETE'",
           },
           ResponseType: 'DEFAULT_4XX',
           RestApiId: {
@@ -155,31 +159,39 @@ const serverlessConfiguration: AWS = {
               AttributeType: 'S',
             },
             {
-              AttributeName: 'timestamp',
+              AttributeName: 'createdAt',
               AttributeType: 'S',
             },
             {
               AttributeName: 'messageId',
               AttributeType: 'S',
             },
+            {
+              AttributeName: 'userId',
+              AttributeType: 'S',
+            },
           ],
           KeySchema: [
             {
-              AttributeName: 'channelId',
+              AttributeName: 'userId',
               KeyType: 'HASH',
             },
             {
-              AttributeName: 'timestamp',
+              AttributeName: 'messageId',
               KeyType: 'RANGE',
             },
           ],
           GlobalSecondaryIndexes: [
             {
-              IndexName: 'messageIdIndex',
+              IndexName: channelIdIndex,
               KeySchema: [
                 {
-                  AttributeName: 'messageId',
+                  AttributeName: 'channelId',
                   KeyType: 'HASH',
+                },
+                {
+                  AttributeName: 'createdAt',
+                  KeyType: 'RANGE',
                 },
               ],
               Projection: {

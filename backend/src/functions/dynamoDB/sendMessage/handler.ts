@@ -2,8 +2,8 @@ import { DynamoDBStreamEvent, DynamoDBStreamHandler } from 'aws-lambda';
 
 import { getConnections } from '@helpers/connections/connectionsBusiness';
 import { sendMessageToClient } from '@helpers/messages/messagesBusiness';
-import { Message } from '@models/Message';
 import { createLogger } from '@utils/logger';
+import { payloadFactory } from './payloadFactory';
 
 const logger = createLogger('sendMessage');
 
@@ -16,25 +16,21 @@ const sendMessage: DynamoDBStreamHandler = async (
     try {
       logger.info('Processing record', { payload: record });
 
-      if (record.eventName !== 'INSERT') {
-        continue;
+      if (!['INSERT', 'REMOVE'].includes(record.eventName)) {
+        return;
       }
 
-      const { channelId, text, timestamp } = record.dynamodb.NewImage;
-      const message: Message = {
-        channelId: channelId.S,
-        text: text.S,
-        timestamp: timestamp.S,
-      };
+      const payloadObject = payloadFactory(record);
+      const payload = payloadObject.create();
 
-      logger.info('Processing a message:', { payload: message });
+      logger.info('Processing a message:', { payload });
 
       const connections = await getConnections();
 
       logger.info('Getted connections');
 
       for (const connection of connections) {
-        await sendMessageToClient(connection.id, message);
+        await sendMessageToClient(connection.id, payload);
       }
     } catch (e) {
       logger.error('Fail to process record:', { error: e });

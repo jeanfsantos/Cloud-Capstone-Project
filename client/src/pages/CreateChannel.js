@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 
-import { config } from '../config';
+import { authConfig, config } from '../config';
 
 function CreateChannel() {
   const [name, setName] = useState('');
-  const { user } = useAuth0();
+  const { getAccessTokenSilently } = useAuth0();
 
   const onSubmit = event => {
     event.preventDefault();
@@ -19,24 +19,33 @@ function CreateChannel() {
     createChannel(name);
   };
 
-  const createChannel = name => {
-    fetch(`${config.endpoint}/channels`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name,
-        user,
-      }),
-    })
-      .catch(err => {
-        throw new Error(err.message);
-      })
-      .then(response => response.json())
-      .then(data =>
-        alert(`Channel created successfully: ${data.channel.name}`),
-      );
+  const createChannel = async name => {
+    try {
+      const accessToken = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: authConfig.audience,
+        },
+      });
+
+      const response = await fetch(`${config.endpoint}/channels`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name,
+        }),
+      });
+
+      const data = await response.json();
+
+      setName('');
+
+      alert(`Channel created successfully: ${data.channel.name}`);
+    } catch (e) {
+      console.error(e.message);
+    }
   };
 
   return (

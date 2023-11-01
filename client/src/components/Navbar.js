@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 
+import { authConfig } from '../config';
+
 function Navbar() {
   const location = useLocation();
   const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
@@ -112,7 +114,16 @@ function Navbar() {
           )}
           {!isAuthenticated && (
             <div className="nav-item">
-              <button className="nav-link" onClick={loginWithRedirect}>
+              <button
+                className="nav-link"
+                onClick={() =>
+                  loginWithRedirect({
+                    authorizationParams: {
+                      audience: authConfig.audience,
+                    },
+                  })
+                }
+              >
                 Log in
               </button>
             </div>

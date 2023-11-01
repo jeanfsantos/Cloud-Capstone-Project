@@ -1,8 +1,10 @@
+import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect, useRef, useState } from 'react';
 
-function Messages({ channel, messages, onSendMessage }) {
+function Messages({ channel, messages, onSendMessage, onDelete }) {
   const ref = useChatScroll(messages);
   const [message, setMessage] = useState('');
+  const { user } = useAuth0();
 
   const onSubmit = e => {
     e.preventDefault();
@@ -15,18 +17,31 @@ function Messages({ channel, messages, onSendMessage }) {
         <h5 className="card-title">{channel.name}</h5>
 
         <div ref={ref} style={{ overflowY: 'scroll', height: '500px' }}>
-          {messages.map((message, index) => {
+          {messages.map(message => {
             return (
-              <div
-                key={message.timestamp}
-                className="alert alert-secondary"
-                role="alert"
-              >
-                <p className="mb-0">{message.text}</p>
-                <small className="mb-0 d-flex flex-row-reverse">
-                  {formatDate(Number(message.timestamp))}
-                </small>
-              </div>
+              <>
+                <div
+                  key={message.messageId}
+                  className="alert alert-secondary"
+                  role="alert"
+                >
+                  <p className="mb-0">{message.text}</p>
+                  <div className="mb-0 d-flex flex-row-reverse">
+                    <div className="d-flex flex-column align-items-end">
+                      <small>{formatDate(Number(message.createdAt))}</small>
+                      {user.sub === message.userId && (
+                        <button
+                          className="btn btn-link btn-sm"
+                          type="button"
+                          onClick={() => onDelete(message.messageId)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
             );
           })}
         </div>

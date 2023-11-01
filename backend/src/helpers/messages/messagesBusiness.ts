@@ -111,3 +111,29 @@ export async function deleteMessageById(
     throw e;
   }
 }
+
+export async function updateMessage(
+  userId: string,
+  messageId: string,
+  text: string,
+): Promise<Message> {
+  try {
+    logger.info(`Updating a messageId ${messageId} for userId ${userId}`);
+
+    const message = await messagesDataAccess.updateMessage(
+      userId,
+      messageId,
+      text,
+    );
+
+    return message;
+  } catch (e) {
+    logger.error(
+      `Fail to update a messageId: ${messageId} for userId: ${userId}`,
+      {
+        error: e,
+      },
+    );
+    throw e;
+  }
+}

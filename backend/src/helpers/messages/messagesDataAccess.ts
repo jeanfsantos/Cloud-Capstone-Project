@@ -1,10 +1,13 @@
-import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
+  GetCommand,
   PutCommand,
   QueryCommand,
   QueryCommandInput,
+  UpdateCommand,
+  UpdateCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
@@ -77,21 +80,17 @@ export class MessagesDataAccess {
     try {
       logger.info(`Deleting a message id: ${messageId} for userId: ${userId}`);
 
-      const getItemCommand = new GetItemCommand({
+      const getCommand = new GetCommand({
         TableName: this.messagesTable,
         Key: {
-          userId: {
-            S: userId,
-          },
-          messageId: {
-            S: messageId,
-          },
+          userId,
+          messageId,
         },
       });
 
-      const getItemResponse = await this.docClient.send(getItemCommand);
+      const response = await this.docClient.send(getCommand);
 
-      if (!getItemResponse.Item) {
+      if (!response.Item) {
         throw new Error('Not found');
       }
 
@@ -108,6 +107,57 @@ export class MessagesDataAccess {
       logger.info(`Deleted a message id: ${messageId} for userId: ${userId}`);
     } catch (e) {
       logger.error('Fail to delete a message', { error: e });
+      throw e;
+    }
+  }
+
+  async updateMessage(
+    userId: string,
+    messageId: string,
+    text: string,
+  ): Promise<Message> {
+    try {
+      logger.info(`Updating a message id: ${messageId} for userId ${userId}`);
+
+      const getCommand = new GetCommand({
+        TableName: this.messagesTable,
+        Key: {
+          userId,
+          messageId,
+        },
+      });
+
+      const response = await this.docClient.send(getCommand);
+
+      if (!response.Item) {
+        throw new Error('Not found');
+      }
+
+      const command: UpdateCommandInput = {
+        TableName: this.messagesTable,
+        ReturnValues: 'ALL_NEW',
+        Key: {
+          userId,
+          messageId,
+        },
+        UpdateExpression: 'SET #text = :text',
+        ExpressionAttributeValues: {
+          ':text': text,
+        },
+        ExpressionAttributeNames: {
+          '#text': 'text',
+        },
+      };
+
+      const updateCommand = new UpdateCommand(command);
+
+      const message = await this.docClient.send(updateCommand);
+
+      logger.info(`Updated a message`, { response: message.Attributes });
+
+      return message.Attributes as Message;
+    } catch (e) {
+      logger.error('Fail to update a message', { error: e });
       throw e;
     }
   }

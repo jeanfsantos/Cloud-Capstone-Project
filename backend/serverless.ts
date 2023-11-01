@@ -9,6 +9,7 @@ import getChannels from '@functions/http/getChannels';
 import createMessage from '@functions/http/createMessage';
 import getMessagesByChannel from '@functions/http/getMessagesByChannel';
 import deleteMessage from '@functions/http/deleteMessage';
+import updateMessage from '@functions/http/updateMessage';
 
 // auth
 import auth0Authorizer from '@functions/auth/auth0Authorizer';
@@ -97,6 +98,7 @@ const serverlessConfiguration: AWS = {
     getMessagesByChannel,
     auth0Authorizer,
     deleteMessage,
+    updateMessage,
   },
   package: { individually: true },
   custom: {

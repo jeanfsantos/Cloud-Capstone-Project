@@ -1,10 +1,29 @@
-import { Component } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { AuthService } from '@auth0/auth0-angular';
+
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  title = 'frontend';
+  auth = inject(AuthService);
+  private document = inject(DOCUMENT);
+
+  onLogin() {
+    this.auth.loginWithRedirect({
+      authorizationParams: {
+        audience: environment.authConfig.audience,
+      },
+    });
+  }
+
+  onLogout() {
+    this.auth.logout({
+      logoutParams: { returnTo: this.document.location.origin },
+    });
+  }
 }

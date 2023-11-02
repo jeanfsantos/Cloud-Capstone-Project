@@ -3,7 +3,7 @@
 
   <button routerLink="/" mat-button>Chat</button>
 
-  <button routerLink="/" mat-button>Channels</button>
+  <button routerLink="channels" mat-button>Channels</button>
 
   <span class="spacer"></span>
 
@@ -15,7 +15,7 @@
     <button
       mat-icon-button
       aria-label="icon-button with logout icon"
-      (click)="onLogout()"
+      (click)="logout()"
     >
       <mat-icon>logout</mat-icon>
     </button>
@@ -25,7 +25,7 @@
     <button
       mat-icon-button
       aria-label="icon-button with login icon"
-      (click)="onLogin()"
+      (click)="login()"
     >
       <mat-icon>login</mat-icon>
     </button>

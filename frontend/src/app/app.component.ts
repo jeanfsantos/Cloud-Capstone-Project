@@ -13,7 +13,7 @@ export class AppComponent {
   auth = inject(AuthService);
   private document = inject(DOCUMENT);
 
-  onLogin() {
+  login() {
     this.auth.loginWithRedirect({
       authorizationParams: {
         audience: environment.authConfig.audience,
@@ -21,7 +21,7 @@ export class AppComponent {
     });
   }
 
-  onLogout() {
+  logout() {
     this.auth.logout({
       logoutParams: { returnTo: this.document.location.origin },
     });

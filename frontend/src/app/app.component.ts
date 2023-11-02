@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
 
-import { environment } from '../environments/environment';
+import { environment } from '@env';
 
 @Component({
   selector: 'app-root',

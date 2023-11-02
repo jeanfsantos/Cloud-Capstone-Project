@@ -4,7 +4,7 @@ import { deleteMessageById } from '@helpers/messages/messagesBusiness';
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
-import { getUserId } from '@utils/auth';
+import { getUserId } from '@helpers/users/usersBusiness';
 import { createLogger } from '@utils/logger';
 import schema from './schema';
 

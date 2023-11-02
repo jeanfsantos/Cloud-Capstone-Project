@@ -91,7 +91,7 @@ export class MessagesDataAccess {
       const response = await this.docClient.send(getCommand);
 
       if (!response.Item) {
-        throw new Error('Not found');
+        throw new Error('Message not found');
       }
 
       const deleteCommand = new DeleteCommand({

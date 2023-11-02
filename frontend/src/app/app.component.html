@@ -1,10 +1,36 @@
-<ng-container *ngIf="auth.isAuthenticated$ | async; else loggedOut">
-  <button (click)="onLogout()">Log out</button>
-</ng-container>
+<mat-toolbar color="primary">
+  <span>My App</span>
 
-<ng-template #loggedOut>
-  <button (click)="onLogin()">Log in</button>
-</ng-template>
+  <button routerLink="/" mat-button>Chat</button>
+
+  <button routerLink="/" mat-button>Channels</button>
+
+  <span class="spacer"></span>
+
+  <ng-container *ngIf="auth.isAuthenticated$ | async; else loggedOut">
+    <ng-container *ngIf="auth.user$ | async as user">
+      <img [src]="user.picture" alt="profile image" class="profile-image" />
+    </ng-container>
+
+    <button
+      mat-icon-button
+      aria-label="icon-button with logout icon"
+      (click)="onLogout()"
+    >
+      <mat-icon>logout</mat-icon>
+    </button>
+  </ng-container>
+
+  <ng-template #loggedOut>
+    <button
+      mat-icon-button
+      aria-label="icon-button with login icon"
+      (click)="onLogin()"
+    >
+      <mat-icon>login</mat-icon>
+    </button>
+  </ng-template>
+</mat-toolbar>
 
 <ul *ngIf="auth.user$ | async as user">
   <li>{{ user.name }}</li>

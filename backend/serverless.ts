@@ -10,6 +10,7 @@ import createMessage from '@functions/http/createMessage';
 import getMessagesByChannel from '@functions/http/getMessagesByChannel';
 import deleteMessage from '@functions/http/deleteMessage';
 import updateMessage from '@functions/http/updateMessage';
+import generateChannelUploadUrl from '@functions/http/generateChannelUploadUrl';
 
 // auth
 import auth0Authorizer from '@functions/auth/auth0Authorizer';
@@ -27,6 +28,7 @@ const channelsTable = `Channels-${stage}`;
 const messagesTable = `Messages-${stage}`;
 const connectionsTable = `Connections-${stage}`;
 const channelIdIndex = 'channelIdIndex';
+const attachmentS3Bucket = `cloud-capstone-project-chat-app-${stage}`;
 
 const serverlessConfiguration: AWS = {
   service: 'backend',
@@ -65,6 +67,8 @@ const serverlessConfiguration: AWS = {
       },
       API_AUTH0: 'https://dev-fqiz0hf1no3st0ac.us.auth0.com',
       CHANNEL_ID_INDEX: channelIdIndex,
+      ATTACHMENT_S3_BUCKET: attachmentS3Bucket,
+      SIGNED_URL_EXPIRATION: '300',
     },
     tracing: {
       lambda: true,
@@ -99,6 +103,7 @@ const serverlessConfiguration: AWS = {
     auth0Authorizer,
     deleteMessage,
     updateMessage,
+    generateChannelUploadUrl,
   },
   package: { individually: true },
   custom: {
@@ -138,14 +143,44 @@ const serverlessConfiguration: AWS = {
         Properties: {
           AttributeDefinitions: [
             {
-              AttributeName: 'id',
+              AttributeName: 'channelId',
+              AttributeType: 'S',
+            },
+            {
+              AttributeName: 'createdAt',
+              AttributeType: 'S',
+            },
+            {
+              AttributeName: 'userId',
               AttributeType: 'S',
             },
           ],
           KeySchema: [
             {
-              AttributeName: 'id',
+              AttributeName: 'userId',
               KeyType: 'HASH',
+            },
+            {
+              AttributeName: 'channelId',
+              KeyType: 'RANGE',
+            },
+          ],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: channelIdIndex,
+              KeySchema: [
+                {
+                  AttributeName: 'channelId',
+                  KeyType: 'HASH',
+                },
+                {
+                  AttributeName: 'createdAt',
+                  KeyType: 'RANGE',
+                },
+              ],
+              Projection: {
+                ProjectionType: 'ALL',
+              },
             },
           ],
           BillingMode: 'PAY_PER_REQUEST',
@@ -225,6 +260,48 @@ const serverlessConfiguration: AWS = {
           ],
           BillingMode: 'PAY_PER_REQUEST',
           TableName: connectionsTable,
+        },
+      },
+      AttachmentsBucket: {
+        Type: 'AWS::S3::Bucket',
+        Properties: {
+          BucketName: '${self:provider.environment.ATTACHMENT_S3_BUCKET}',
+          PublicAccessBlockConfiguration: {
+            BlockPublicPolicy: false,
+            RestrictPublicBuckets: false,
+          },
+          CorsConfiguration: {
+            CorsRules: [
+              {
+                AllowedOrigins: ['*'],
+                AllowedHeaders: ['*'],
+                AllowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'],
+                MaxAge: 3000,
+              },
+            ],
+          },
+        },
+      },
+      BucketPolicy: {
+        Type: 'AWS::S3::BucketPolicy',
+        Properties: {
+          PolicyDocument: {
+            Id: 'MyPolicy',
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Sid: 'PublicReadForGetBucketObjects',
+                Effect: 'Allow',
+                Principal: '*',
+                Action: '*',
+                Resource:
+                  'arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*',
+              },
+            ],
+          },
+          Bucket: {
+            Ref: 'AttachmentsBucket',
+          },
         },
       },
     },

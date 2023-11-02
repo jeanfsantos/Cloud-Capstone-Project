@@ -14,7 +14,9 @@
   "dependencies": {
     "@aws-sdk/client-apigatewaymanagementapi": "^3.437.0",
     "@aws-sdk/client-dynamodb": "^3.435.0",
+    "@aws-sdk/client-s3": "^3.441.0",
     "@aws-sdk/lib-dynamodb": "^3.435.0",
+    "@aws-sdk/s3-request-presigner": "^3.441.0",
     "@middy/core": "^3.4.0",
     "@middy/http-cors": "^4.6.5",
     "@middy/http-json-body-parser": "^3.4.0",

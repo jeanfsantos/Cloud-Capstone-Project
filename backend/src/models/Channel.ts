@@ -1,7 +1,10 @@
 import { User } from './User';
 
 export interface Channel {
-  id: string;
+  channelId: string;
   name: string;
   user: User;
+  userId: string;
+  createdAt: string;
+  imageUrl?: string;
 }

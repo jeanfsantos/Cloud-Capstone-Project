@@ -1,9 +1,13 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
+  GetCommand,
+  GetCommandInput,
   PutCommand,
   ScanCommand,
   ScanCommandInput,
+  UpdateCommand,
+  UpdateCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 import { captureAWSv3Client } from 'aws-xray-sdk-core';
 
@@ -55,6 +59,73 @@ export class ChannelsDataAccess {
       return result.Items as Channel[];
     } catch (e) {
       logger.error('Fail to get channels', { error: e });
+      throw e;
+    }
+  }
+
+  async getChannelByUserAndId(
+    userId: string,
+    channelId: string,
+  ): Promise<Channel> {
+    try {
+      logger.info(`Getting channel ${channelId} and user ${userId}`);
+
+      const params: GetCommandInput = {
+        TableName: this.channelsTable,
+        Key: {
+          userId,
+          channelId,
+        },
+      };
+
+      const command = new GetCommand(params);
+
+      const result = await this.docClient.send(command);
+
+      if (!result.Item) {
+        throw new Error('Channel not found');
+      }
+
+      return result.Item as Channel;
+    } catch (e) {
+      logger.error(`Fail to get channel by id`, { error: e });
+      throw e;
+    }
+  }
+
+  async updateAttachmentUrl(
+    userId: string,
+    channelId: string,
+    attachmentUrl: string,
+  ): Promise<void> {
+    try {
+      logger.info(
+        `Updating attachment url for ${userId} and ${channelId} with url ${attachmentUrl}`,
+      );
+
+      const params: UpdateCommandInput = {
+        TableName: this.channelsTable,
+        Key: {
+          userId,
+          channelId,
+        },
+        ExpressionAttributeNames: {
+          '#channel_attachmentUrl': 'attachmentUrl',
+        },
+        ExpressionAttributeValues: {
+          ':attachmentUrl': attachmentUrl,
+        },
+        UpdateExpression: 'SET #channel_attachmentUrl = :attachmentUrl',
+        ReturnValues: 'ALL_NEW',
+      };
+
+      const command = new UpdateCommand(params);
+
+      const result = await this.docClient.send(command);
+
+      logger.info(`Result of update statement`, { result: result });
+    } catch (e) {
+      logger.error('Fail to updateAttachment', { error: e });
       throw e;
     }
   }

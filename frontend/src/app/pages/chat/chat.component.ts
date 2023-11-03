@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
-  AfterViewChecked,
+  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
@@ -21,7 +21,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule, MatSelectionListChange } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { AuthService } from '@auth0/auth0-angular';
 import {
   BehaviorSubject,
   Observable,
@@ -35,6 +37,7 @@ import { webSocket } from 'rxjs/webSocket';
 import { environment } from '@env';
 import { Channel } from '@models/channel';
 import { Message } from '@models/message';
+import { MessageComponent } from './components/message/message.component';
 
 interface ChannelResponse {
   channels: Channel[];
@@ -44,9 +47,16 @@ interface MessageResponse {
   messages: Message[];
 }
 
-interface SocketResponse<T> {
-  eventName: 'INSERT' | 'REMOVE';
-  payload: T;
+interface InsertSocketResponse {
+  eventName: 'INSERT';
+  payload: Message;
+}
+
+interface RemoveSocketResponse {
+  eventName: 'REMOVE';
+  payload: {
+    messageId: string;
+  };
 }
 
 @Component({
@@ -62,10 +72,12 @@ interface SocketResponse<T> {
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
+    MatMenuModule,
+    MessageComponent,
   ],
   templateUrl: './chat.component.html',
 })
-export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   private http = inject(HttpClient);
   channels$: Observable<Channel[]> = of([]);
   private fb = new FormBuilder();
@@ -74,11 +86,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     channelId: new FormControl('', Validators.required),
   });
   private subscriptions = new Subscription();
-  private messageSubject = new BehaviorSubject<Message[]>([]);
-  messages$ = this.messageSubject.asObservable();
-  isSending = false;
+  private messagesSubject = new BehaviorSubject<Message[]>([]);
+  messages$ = this.messagesSubject.asObservable();
+  isLoading = false;
   private webSocketSubject = webSocket(environment.socketUrl);
-  @ViewChild('container') container: ElementRef<HTMLUListElement>;
+  @ViewChild('container') private container: ElementRef<HTMLUListElement>;
+  auth = inject(AuthService);
 
   ngOnInit(): void {
     this.fetchChannels();
@@ -86,7 +99,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.handleWebSocket();
   }
 
-  ngAfterViewChecked(): void {
+  ngAfterViewInit(): void {
     this.scrollToBottom();
   }
 
@@ -108,14 +121,30 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
 
-    this.isSending = true;
+    this.isLoading = true;
 
     this.http
       .post(`${environment.endpoint}/messages`, this.form.value)
       .subscribe({
         next: () => this.form.controls.text.reset(),
-        complete: () => (this.isSending = false),
+        complete: () => (this.isLoading = false),
       });
+  }
+
+  remove(messageId: string) {
+    if (!messageId) {
+      return;
+    }
+
+    this.http
+      .delete(`${environment.endpoint}/messages/${messageId}`)
+      .subscribe({
+        next: () => (this.isLoading = true),
+      });
+  }
+
+  identify(index: number, message: Message) {
+    return message.messageId;
   }
 
   private fetchChannels() {
@@ -136,17 +165,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         ),
       )
       .subscribe({
-        next: data => this.messageSubject.next(data),
+        next: data => this.messagesSubject.next(data),
       });
 
     this.subscriptions.add(subscription);
   }
 
   private scrollToBottom() {
-    const subscription = this.messageSubject.subscribe({
+    const subscription = this.messages$.subscribe({
       next: () => {
-        this.container.nativeElement.scrollTop =
-          this.container.nativeElement.scrollHeight;
+        if (!this.container) {
+          return;
+        }
+
+        setTimeout(() => {
+          this.container.nativeElement.scrollTop =
+            this.container.nativeElement.scrollHeight;
+        });
       },
     });
 
@@ -156,16 +191,34 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private handleWebSocket() {
     const subscription = this.webSocketSubject.subscribe({
       next: data => {
-        if ((data as SocketResponse<Message>).eventName === 'INSERT') {
-          const payload = (data as SocketResponse<Message>).payload;
-
-          if (payload.channelId === this.form.controls.channelId.value) {
-            this.messageSubject.next([...this.messageSubject.value, payload]);
-          }
+        if ((data as InsertSocketResponse).eventName === 'INSERT') {
+          this.appendMessage(data);
+        } else if ((data as RemoveSocketResponse).eventName === 'REMOVE') {
+          this.removeMessage(data);
         }
+        this.isLoading = false;
       },
     });
 
     this.subscriptions.add(subscription);
+  }
+
+  private removeMessage(data: unknown) {
+    const messageId = (data as RemoveSocketResponse).payload.messageId;
+    const messagesFiltered = this.messagesSubject.value.filter(
+      m => m.messageId !== messageId,
+    );
+
+    if (this.messagesSubject.value.length !== messagesFiltered.length) {
+      this.messagesSubject.next(messagesFiltered);
+    }
+  }
+
+  private appendMessage(data: unknown) {
+    const payload = (data as InsertSocketResponse).payload;
+
+    if (payload.channelId === this.form.controls.channelId.value) {
+      this.messagesSubject.next([...this.messagesSubject.value, payload]);
+    }
   }
 }

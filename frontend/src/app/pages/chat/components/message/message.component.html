@@ -1,0 +1,33 @@
+<div class="flex items-end m-5">
+  <div class="grow border border-gray-400 p-2 bg-white rounded-lg">
+    <p class="flex gap-2 items-center">
+      <img
+        [src]="message.user.picture"
+        alt="profile image"
+        class="w-6 h-6 rounded-[50%]"
+      />
+      <span class="text-[#673ab7] font-bold">{{ message.user.name }}</span>
+    </p>
+    <p class="text-neutral-950">{{ message.text }}</p>
+    <p class="flex justify-end m-0">
+      <time [dateTime]="message.createdAt" class="text-xs">{{
+        message.createdAt | date : 'medium'
+      }}</time>
+    </p>
+  </div>
+
+  <button
+    *ngIf="userId === message.userId"
+    mat-icon-button
+    aria-label="icon-button with more icon"
+    [matMenuTriggerFor]="menu"
+  >
+    <mat-icon>more_vert</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="remove.emit(message.messageId)">
+      Delete
+    </button>
+  </mat-menu>
+</div>

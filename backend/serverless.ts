@@ -11,6 +11,7 @@ import getMessagesByChannel from '@functions/http/getMessagesByChannel';
 import deleteMessage from '@functions/http/deleteMessage';
 import updateMessage from '@functions/http/updateMessage';
 import generateChannelUploadUrl from '@functions/http/generateChannelUploadUrl';
+import getMyChannels from '@functions/http/getMyChannels';
 
 // auth
 import auth0Authorizer from '@functions/auth/auth0Authorizer';
@@ -104,6 +105,7 @@ const serverlessConfiguration: AWS = {
     deleteMessage,
     updateMessage,
     generateChannelUploadUrl,
+    getMyChannels,
   },
   package: { individually: true },
   custom: {

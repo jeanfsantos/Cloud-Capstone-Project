@@ -48,6 +48,19 @@ export async function getChannels(): Promise<Channel[]> {
   }
 }
 
+export async function getChannelsByUserId(userId: string): Promise<Channel[]> {
+  try {
+    logger.info(`Getting channels by user ${userId}`);
+
+    const channels = await channelsDataAccess.getChannelByUserId(userId);
+
+    return channels;
+  } catch (e) {
+    logger.error('Fail to get channels by user', { error: e });
+    throw e;
+  }
+}
+
 export async function getChannelByUserAndId(
   userId: string,
   channelId: string,

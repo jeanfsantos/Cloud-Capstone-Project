@@ -4,6 +4,8 @@ import {
   GetCommand,
   GetCommandInput,
   PutCommand,
+  QueryCommand,
+  QueryCommandInput,
   ScanCommand,
   ScanCommandInput,
   UpdateCommand,
@@ -59,6 +61,34 @@ export class ChannelsDataAccess {
       return result.Items as Channel[];
     } catch (e) {
       logger.error('Fail to get channels', { error: e });
+      throw e;
+    }
+  }
+
+  async getChannelByUserId(userId: string) {
+    try {
+      logger.info(`Getting channels by user ${userId}`);
+
+      const params: QueryCommandInput = {
+        TableName: this.channelsTable,
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': userId,
+        },
+        ScanIndexForward: false,
+      };
+
+      const command = new QueryCommand(params);
+
+      const result = await this.docClient.send(command);
+
+      if (!result.Items) {
+        return [];
+      }
+
+      return result.Items as Channel[];
+    } catch (e) {
+      logger.error(`Fail to get channel by id`, { error: e });
       throw e;
     }
   }

@@ -23,6 +23,16 @@ const routes: Routes = [
       import('./pages/chat/chat.component').then(c => c.ChatComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/home/home.component').then(c => c.HomeComponent),
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: '',
+  },
 ];
 
 @NgModule({

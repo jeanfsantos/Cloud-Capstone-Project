@@ -17,28 +17,7 @@ import { RouterModule } from '@angular/router';
 import { EMPTY, Observable, catchError, map, of } from 'rxjs';
 
 import { environment } from '@env';
-
-interface User {
-  sub: string;
-  email_verified: boolean;
-  updated_at: string;
-  nickname: string;
-  name: string;
-  given_name: string;
-  locale: string;
-  family_name: string;
-  picture: string;
-  email: string;
-}
-
-interface Channel {
-  createdAt: string;
-  user: User;
-  channelId: string;
-  name: string;
-  userId: string;
-  attachmentUrl?: string;
-}
+import { Channel } from '@models/channel';
 
 @Component({
   selector: 'app-channels',

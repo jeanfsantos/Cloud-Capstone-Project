@@ -21,7 +21,8 @@
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
     "paths": {
-      "@env": ["./src/environments/environment.ts"]
+      "@env": ["./src/environments/environment.ts"],
+      "@models/*": ["./src/app/models/*"]
     }
   },
   "angularCompilerOptions": {

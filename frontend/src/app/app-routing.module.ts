@@ -4,6 +4,12 @@ import { AuthGuard } from '@auth0/auth0-angular';
 
 const routes: Routes = [
   {
+    path: 'channels/:id/edit',
+    loadComponent: () =>
+      import('./pages/channels/edit/edit.component').then(c => c.EditComponent),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'channels',
     loadComponent: () =>
       import('./pages/channels/channels.component').then(

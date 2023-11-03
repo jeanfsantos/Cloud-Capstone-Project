@@ -13,6 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { RouterModule } from '@angular/router';
 import { EMPTY, Observable, catchError, map, of } from 'rxjs';
 
 import { environment } from '@env';
@@ -51,6 +52,7 @@ interface Channel {
     ReactiveFormsModule,
     MatSnackBarModule,
     MatDividerModule,
+    RouterModule,
   ],
   templateUrl: './channels.component.html',
 })

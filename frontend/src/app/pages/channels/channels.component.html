@@ -45,7 +45,13 @@
       <ng-container matColumnDef="edit">
         <th mat-header-cell *matHeaderCellDef>Action</th>
         <td mat-cell *matCellDef="let channel" class="py-3">
-          <button mat-raised-button color="primary">Edit</button>
+          <button
+            mat-raised-button
+            color="primary"
+            [routerLink]="['/channels', channel.channelId, 'edit']"
+          >
+            Edit
+          </button>
         </td>
       </ng-container>
 

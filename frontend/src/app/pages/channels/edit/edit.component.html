@@ -1,0 +1,35 @@
+<div class="container mx-auto">
+  <button
+    mat-mini-fab
+    color="accent"
+    aria-label="icon-button with arrow back icon"
+    [routerLink]="['/channels']"
+  >
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  <h1 class="text-3xl mt-5">Edit Channel</h1>
+
+  <form [formGroup]="form">
+    <mat-form-field class="w-full">
+      <mat-label>Image</mat-label>
+
+      <ngx-mat-file-input
+        formControlName="attachment"
+        accept=".png,.jpg,.jpeg"
+        color="primary"
+      >
+      </ngx-mat-file-input>
+    </mat-form-field>
+
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      (click)="save()"
+      [disabled]="form.invalid"
+    >
+      Upload
+    </button>
+  </form>
+</div>

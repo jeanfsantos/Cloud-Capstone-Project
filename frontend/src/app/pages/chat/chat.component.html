@@ -43,30 +43,28 @@
 
       <mat-card-content>
         <mat-divider></mat-divider>
-        <div class="h-[500px] overflow-y-scroll">
-          <ul>
-            <li *ngFor="let message of messages$ | async">
-              <div class="border border-gray-400 p-2 m-5 bg-white rounded-lg">
-                <p class="flex gap-2 items-center">
-                  <img
-                    [src]="message.user.picture"
-                    alt="profile image"
-                    class="w-6 h-6 rounded-[50%]"
-                  />
-                  <span class="text-[#673ab7] font-bold">{{
-                    message.user.name
-                  }}</span>
-                </p>
-                <p class="text-neutral-950">{{ message.text }}</p>
-                <p class="flex justify-end m-0">
-                  <time [dateTime]="message.createdAt" class="text-xs">{{
-                    message.createdAt | date : 'medium'
-                  }}</time>
-                </p>
-              </div>
-            </li>
-          </ul>
-        </div>
+        <ul class="h-[500px] overflow-y-scroll" #container>
+          <li *ngFor="let message of messages$ | async">
+            <div class="border border-gray-400 p-2 m-5 bg-white rounded-lg">
+              <p class="flex gap-2 items-center">
+                <img
+                  [src]="message.user.picture"
+                  alt="profile image"
+                  class="w-6 h-6 rounded-[50%]"
+                />
+                <span class="text-[#673ab7] font-bold">{{
+                  message.user.name
+                }}</span>
+              </p>
+              <p class="text-neutral-950">{{ message.text }}</p>
+              <p class="flex justify-end m-0">
+                <time [dateTime]="message.createdAt" class="text-xs">{{
+                  message.createdAt | date : 'medium'
+                }}</time>
+              </p>
+            </div>
+          </li>
+        </ul>
         <mat-divider></mat-divider>
       </mat-card-content>
 

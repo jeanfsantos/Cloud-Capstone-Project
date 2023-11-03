@@ -1,6 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -22,6 +30,7 @@ import {
   of,
   switchMap,
 } from 'rxjs';
+import { webSocket } from 'rxjs/webSocket';
 
 import { environment } from '@env';
 import { Channel } from '@models/channel';
@@ -33,6 +42,11 @@ interface ChannelResponse {
 
 interface MessageResponse {
   messages: Message[];
+}
+
+interface SocketResponse<T> {
+  eventName: 'INSERT' | 'REMOVE';
+  payload: T;
 }
 
 @Component({
@@ -51,7 +65,7 @@ interface MessageResponse {
   ],
   templateUrl: './chat.component.html',
 })
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private http = inject(HttpClient);
   channels$: Observable<Channel[]> = of([]);
   private fb = new FormBuilder();
@@ -63,10 +77,17 @@ export class ChatComponent implements OnInit, OnDestroy {
   private messageSubject = new BehaviorSubject<Message[]>([]);
   messages$ = this.messageSubject.asObservable();
   isSending = false;
+  private webSocketSubject = webSocket(environment.socketUrl);
+  @ViewChild('container') container: ElementRef<HTMLUListElement>;
 
   ngOnInit(): void {
     this.fetchChannels();
     this.fetchMessages();
+    this.handleWebSocket();
+  }
+
+  ngAfterViewChecked(): void {
+    this.scrollToBottom();
   }
 
   ngOnDestroy(): void {
@@ -117,6 +138,33 @@ export class ChatComponent implements OnInit, OnDestroy {
       .subscribe({
         next: data => this.messageSubject.next(data),
       });
+
+    this.subscriptions.add(subscription);
+  }
+
+  private scrollToBottom() {
+    const subscription = this.messageSubject.subscribe({
+      next: () => {
+        this.container.nativeElement.scrollTop =
+          this.container.nativeElement.scrollHeight;
+      },
+    });
+
+    this.subscriptions.add(subscription);
+  }
+
+  private handleWebSocket() {
+    const subscription = this.webSocketSubject.subscribe({
+      next: data => {
+        if ((data as SocketResponse<Message>).eventName === 'INSERT') {
+          const payload = (data as SocketResponse<Message>).payload;
+
+          if (payload.channelId === this.form.controls.channelId.value) {
+            this.messageSubject.next([...this.messageSubject.value, payload]);
+          }
+        }
+      },
+    });
 
     this.subscriptions.add(subscription);
   }

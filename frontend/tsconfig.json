@@ -23,7 +23,8 @@
     "paths": {
       "@env": ["./src/environments/environment.ts"],
       "@models/*": ["./src/app/models/*"]
-    }
+    },
+    "strictPropertyInitialization": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

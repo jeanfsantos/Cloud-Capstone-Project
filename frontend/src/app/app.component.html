@@ -1,7 +1,7 @@
 <mat-toolbar color="primary">
   <span>My App</span>
 
-  <button routerLink="/" mat-button>Chat</button>
+  <button routerLink="/chat" mat-button>Chat</button>
 
   <button routerLink="channels" mat-button>Channels</button>
 
@@ -32,9 +32,10 @@
   </ng-template>
 </mat-toolbar>
 
-<ul *ngIf="auth.user$ | async as user">
-  <li>{{ user.name }}</li>
-  <li>{{ user.email }}</li>
-</ul>
-
-<router-outlet></router-outlet>
+<div class="container mx-auto">
+  <ul *ngIf="auth.user$ | async as user">
+    <li>{{ user.name }}</li>
+    <li>{{ user.email }}</li>
+  </ul>
+  <router-outlet></router-outlet>
+</div>

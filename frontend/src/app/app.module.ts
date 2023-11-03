@@ -24,7 +24,7 @@ import { AppComponent } from './app.component';
         audience: environment.authConfig.audience,
       },
       httpInterceptor: {
-        allowedList: [`${environment.endpoint}/channels`],
+        allowedList: [`${environment.endpoint}/*`],
       },
     }),
     BrowserAnimationsModule,
